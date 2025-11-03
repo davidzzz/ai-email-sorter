@@ -1,0 +1,59 @@
+create table users (
+  id uuid PRIMARY KEY,
+  name text not null,
+  email text UNIQUE not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table accounts (
+  id uuid PRIMARY KEY,
+  user_id uuid REFERENCES users(id) not null,
+  provider_user_email text, -- the Gmail address
+  google_refresh_token text, -- encrypted
+  google_access_token text,  -- optional, short-lived
+  token_expires_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table categories (
+  id uuid PRIMARY KEY,
+  user_id uuid REFERENCES users(id) not null, -- owner
+  name text not null,
+  description text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table emails (
+  id uuid PRIMARY KEY,
+  account_id uuid REFERENCES accounts(id) not null,
+  gmail_message_id text UNIQUE not null,
+  thread_id text,
+  from_email text not null,
+  to_email text not null,
+  subject text not null,
+  snippet text,
+  stored_html_location text, -- object store path
+  stored_text text,
+  imported_at timestamptz,
+  ai_summary text,
+  ai_category_id uuid REFERENCES categories(id),
+  ai_confidence numeric,
+  archived boolean DEFAULT false,
+  unsubscribe_links jsonb, -- array of candidate links
+  status jsonb, -- job statuses
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table unsubscribe_jobs (
+  id uuid PRIMARY KEY,
+  email_id uuid REFERENCES emails(id) not null,
+  job_status text,
+  last_attempted_at timestamptz,
+  result jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);

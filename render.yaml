@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: backend
+    env: docker
+    plan: free
+    region: singapore
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+    autoDeploy: true
+
+  - type: web
+    name: frontend
+    env: docker
+    plan: free
+    region: singapore
+    rootDir: frontend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        fromService:
+          name: backend
+          type: web
+    autoDeploy: true
+
+databases:
+  - name: ai_email_sorter
+    databaseName: ai_email_sorter
+    plan: free
